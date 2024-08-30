@@ -4,51 +4,82 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='css/style.css')}}">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+    </style>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', path='/css/style.css')}}"
+    />
     <!-- <script src=""></script> -->
-
   </head>
   <body>
-    <h1>LangChain ⛓️ | FastAPI 🌐</h1>
-    <div id="container"></div>
-    <div id="error-field"></div>
+    <header>
+      <h1>LangChain ⛓️ | FastAPI 🌐</h1>
+      <p>Your language translator</p>
+    </header>
+    <section>
+      <div id="container"></div>
+    </section>
 
-    <form class="flex flex-col items-center justify-center">
-      <textarea
-        required
-        class="w-[50%] h-48 p-4 mb-4 border border-gray-400 rounded-lg focus:outline-none focus:ring focus:border-blue-500"
-        placeholder="Enter your text here..."
-      ></textarea>
-      <button
-        type="button"
-        id="menuBtn"
-        class="px-10 py-2 text-gray-200 bg-purple-600 rounded-full shadow-md text-lg hover:bg-gray-800 hover:border-red"
-      >
-        Make Request
-      </button>
-    </form>
+    <section class="prompt-container">
+      <div>
+        <textarea
+          required
+          class=""
+          placeholder="Place your language to translate to english..."
+        ></textarea>
+        <button type="button" id="menuBtn" class="">
+          <img
+            src="{{ url_for('static', path='/icons/language-outline.svg') }}"
+            alt="Translate"
+          />
+        </button>
+      </div>
+      <p id="error-field"></p>
+    </section>
 
     <script>
       const containerDisplay = document.getElementById("container");
+      const inputField = document.querySelector("textarea");
       const form = document.getElementById("myForm");
       const menuBtn = document.getElementById("menuBtn");
       const errorField = document.getElementById("error-field");
 
-      menuBtn.addEventListener("click", async function () {
+      inputField.addEventListener("keyup", function () {
+        if (this.value) {
+          menuBtn.removeAttribute("disabled");
+        } else {
+          menuBtn.setAttribute("disabled", true);
+        }
+      });
 
+      menuBtn.setAttribute("disabled", true);
+      menuBtn.addEventListener("click", async function () {
         errorField.innerText = "";
         this.setAttribute("disabled", true);
         this.innerText = "Waiting...";
-        containerDisplay.innerHTML = ""
-
-        const response = await fetch("/request");
+        containerDisplay.innerHTML = "";
+        console.log(inputField.value);
+        const formData = new FormData();
+        formData.append("prompt", inputField.value);
+        const response = await fetch("/request", {
+          method: "POST",
+          body: formData,
+        });
         const data = await response.json();
         if (response.ok) {
           containerDisplay.innerText = data.message;
         } else {
+          console.log(data);
           errorField.innerText = data.detail;
         }
-        
+
         this.removeAttribute("disabled");
         this.innerText = "Make Request";
       });
